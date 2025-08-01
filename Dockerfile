@@ -1,14 +1,20 @@
-# Use a lightweight Java image
-FROM openjdk:17-jdk-slim
+# Stage 1: Build the application using Maven
+FROM maven:3.9.6-eclipse-temurin-17 as builder
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy the JAR file to the container
-COPY target/Exam-application-0.0.1-SNAPSHOT.jar app.jar
+COPY pom.xml .
+COPY src ./src
 
-# Expose port 8080 (same as your Spring Boot app)
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run the JAR using a lightweight image
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
 EXPOSE 8081
 
-# Run the JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
