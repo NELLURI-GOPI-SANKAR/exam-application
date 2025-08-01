@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Questions</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3436;
+            line-height: 1.6;
+            padding: 20px 0;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            animation: drift 25s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            33% { transform: translateX(30px) translateY(-30px); }
+            66% { transform: translateX(-20px) translateY(20px); }
+        }
+
+        /* Header Section */
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .page-title {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .page-title::before {
+            content: '📝';
+            font-size: 2.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .quiz-name {
+            color: #636e72;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Main Container */
+        .questions-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Form styling */
+        .questions-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Question Card */
+        .question-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: slideInQuestion 0.6s ease-out forwards;
+        }
+
+        .question-card:nth-child(1) { animation-delay: 0.1s; }
+        .question-card:nth-child(2) { animation-delay: 0.2s; }
+        .question-card:nth-child(3) { animation-delay: 0.3s; }
+        .question-card:nth-child(4) { animation-delay: 0.4s; }
+        .question-card:nth-child(n+5) { animation-delay: 0.5s; }
+
+        @keyframes slideInQuestion {
+            0% {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15);
+        }
+
+        /* Question Header */
+        .question-header {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .question-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label.question-label::before {
+            content: '❓';
+            font-size: 1rem;
+        }
+
+        .form-label.option-label::before {
+            content: '◦';
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        .form-label.correct-label::before {
+            content: '✅';
+            font-size: 1rem;
+        }
+
+        /* Input styling */
+        .form-input {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8f9fa;
+            resize: vertical;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 15px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-input:valid {
+            border-color: #00b894;
+        }
+
+        /* Question text input - larger */
+        .question-input {
+            min-height: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Options container */
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Correct option input */
+        .correct-option-input {
+            max-width: 100px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .correct-option-input:focus {
+            border-color: #00b894;
+        }
+
+        /* Divider */
+        .question-divider {
+            margin: 40px 0;
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+        }
+
+        /* Submit Button */
+        .submit-container {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f1f3f4;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 184, 148, 0.4);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn::after {
+            content: '💾';
+            font-size: 1.2rem;
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Progress indicator */
+        .progress-container {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .progress-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .questions-container {
+                padding: 0 15px;
+            }
+
+            .questions-form {
+                padding: 25px 20px;
+            }
+
+            .question-card {
+                padding: 25px 20px;
+                margin-bottom: 25px;
+            }
+
+            .question-header {
+                font-size: 1.2rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .options-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .submit-btn {
+                width: 100%;
+                padding: 18px;
+                font-size: 1.2rem;
+            }
+
+            .form-input {
+                padding: 12px 15px;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .form-input:focus {
+            outline: 3px solid rgba(102, 126, 234, 0.3);
+            outline-offset: 2px;
+        }
+
+        .submit-btn:focus {
+            outline: 3px solid rgba(0, 184, 148, 0.3);
+            outline-offset: 2px;
+        }
+
+        /* Loading state */
+        .submit-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .submit-btn.loading::after {
+            content: '⏳';
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="page-header">
+        <div class="header-content">
+            <h2 class="page-title">Add Questions</h2>
+            <p class="quiz-name">Quiz: <span th:text="${quizName}"></span></p>
+        </div>
+    </header>
+
+    <!-- Main Questions Container -->
+    <div class="questions-container">
+        <div class="progress-container">
+            <p class="progress-text">Fill in all questions and options below to complete your quiz</p>
+        </div>
+
+        <!-- Questions Form - EXACT ORIGINAL STRUCTURE PRESERVED -->
+        <form class="questions-form" th:action="@{/admin/save-quiz}" method="post" id="questionsForm">
+            <input type="hidden" name="quizName" th:value="${quizName}">
+            <input type="hidden" name="numberOfQuestions" th:value="${numberOfQuestions}">
+
+            <div class="question-card" th:each="i : ${#numbers.sequence(0, numberOfQuestions - 1)}">
+                <div class="question-header">
+                    <div class="question-number" th:text="${i + 1}">1</div>
+                    <span>Question <span th:text="${i + 1}"></span></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label question-label">Question:</label>
+                    <input type="text" class="form-input question-input" th:name="'questions[' + ${i} + '].text'" required placeholder="Enter your question here...">
+                </div>
+
+                <div class="options-container">
+                    <div class="form-group">
+                        <label class="form-label option-label">Option 1:</label>
+                        <input type="text" class="form-input" th:name="'questions[' + ${i} + '].option1'" required placeholder="First option">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label option-label">Option 2:</label>
+                        <input type="text" class="form-input" th:name="'questions[' + ${i} + '].option2'" required placeholder="Second option">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label option-label">Option 3:</label>
+                        <input type="text" class="form-input" th:name="'questions[' + ${i} + '].option3'" required placeholder="Third option">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label option-label">Option 4:</label>
+                        <input type="text" class="form-input" th:name="'questions[' + ${i} + '].option4'" required placeholder="Fourth option">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label correct-label">Correct Option (1 to 4):</label>
+                    <input type="number" class="form-input correct-option-input" min="1" max="4" th:name="'questions[' + ${i} + '].correctOption'" required placeholder="1-4">
+                </div>
+
+                <hr class="question-divider" th:unless="${i == numberOfQuestions - 1}">
+            </div>
+
+            <div class="submit-container">
+                <button type="submit" class="submit-btn" id="saveBtn">Save Quiz</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('questionsForm');
+            const saveBtn = document.getElementById('saveBtn');
+
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+                // Show loading state
+                saveBtn.classList.add('loading');
+                saveBtn.innerHTML = 'Saving Quiz... ⏳';
+                saveBtn.disabled = true;
+
+                // Allow form to submit normally
+                return true;
+            });
+
+            // Auto-focus on first question input
+            const firstQuestionInput = document.querySelector('.question-input');
+            if (firstQuestionInput) {
+                firstQuestionInput.focus();
+            }
+
+            // Enhanced UX: Move to next input after completing current one
+            const allInputs = document.querySelectorAll('.form-input');
+            allInputs.forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && this.type !== 'number') {
+                        e.preventDefault();
+                        const nextInput = allInputs[index + 1];
+                        if (nextInput) {
+                            nextInput.focus();
+                        }
+                    }
+                });
+            });
+
+            // Validation for correct option inputs
+            const correctOptionInputs = document.querySelectorAll('.correct-option-input');
+            correctOptionInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const value = parseInt(this.value);
+                    if (value < 1 || value > 4) {
+                        this.style.borderColor = '#e74c3c';
+                    } else {
+                        this.style.borderColor = '#00b894';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .score-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 300px;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-text {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .details {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .details h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .detail-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            color: #555;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Custom scrollbar */
+        .details::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .details::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .details::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 10px;
+        }
+
+        .details::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.8);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .score-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .score-display {
+                font-size: 2.5rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+
+        /* Add some demo content for scrolling */
+        .content-section {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .quiz-summary {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .quiz-summary::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .quiz-summary::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .quiz-summary::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="score-card">
+            <h2>Quiz Completed!</h2>
+            
+            <div class="score-display">
+                <span th:text="${score}">8</span> / <span th:text="${total}">10</span>
+            </div>
+            
+            <p class="score-text">Great job on completing the quiz!</p>
+            
+            <div class="actions">
+                <a href="/student/dashboard" class="btn btn-primary">Take Another Quiz</a>
+                <a href="/student/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+            
+            <div class="content-section">
+                <div class="quiz-summary">
+                    <h3>Quiz Summary</h3>
+                    <div class="detail-item">
+                        <strong>Performance:</strong> You scored above average!
+                    </div>
+                    
+                    <div class="detail-item">
+                        <strong>Difficulty Level:</strong> Intermediate
+                    </div>
+                    <div class="detail-item">
+                        <strong>Category:</strong> General Knowledge
+                    </div>
+
+                    <div class="detail-item">
+                        <strong>Areas for Improvement:</strong> Review topics on history and science
+                    </div>
+                    <div class="detail-item">
+                        <strong>Recommendation:</strong> Try the advanced level quiz next
+                    </div>
+                    <div class="detail-item">
+                        <strong>Next Steps:</strong> Continue practicing to improve your score
+                    </div>
+                    <div class="detail-item">
+                        <strong>Achievement:</strong> You've earned the "Quick Learner" badge
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
